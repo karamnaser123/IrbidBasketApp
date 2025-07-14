@@ -1,4 +1,4 @@
-name: Flutter Build
+name: Flutter iOS Build
 
 on:
   push:
@@ -8,14 +8,15 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout source
         uses: actions/checkout@v2
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'latest'
+          flutter-version: '3.13.0' # أو أي إصدار أنت متأكد أنه مدعوم
 
       - name: Install dependencies
         run: flutter pub get
