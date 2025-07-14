@@ -10,13 +10,13 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout source
+      - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.13.0' # أو أي إصدار أنت متأكد أنه مدعوم
+          flutter-version: '3.22.0' # Flutter version that includes Dart 3.8.1+
 
       - name: Install dependencies
         run: flutter pub get
