@@ -1,0 +1,20 @@
+name: Flutter iOS Build
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # تحديث checkout إلى v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.6' # الإصدار المقترح في رسالة الخطأ
+          channel: 'stable' # إضافة channel للاستقرار
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build iOS
+        run: flutter build ios --release
