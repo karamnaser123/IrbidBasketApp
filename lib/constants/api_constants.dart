@@ -8,6 +8,7 @@ class ApiConstants {
   static const String userEndpoint = 'user';
   static const String userProfileUpdateEndpoint = 'update-profile';
   static const String changePasswordEndpoint = 'update-password';
+  static const String forgotPasswordEndpoint = 'forgot-password';
   
   // Cards API Endpoints
   static const String userCardsEndpoint = 'user-cards';
@@ -23,4 +24,5 @@ class ApiConstants {
   static String get userCardsUrl => '$baseUrl$userCardsEndpoint';
   static String get cardDetailsUrl => '$baseUrl$cardDetailsEndpoint';
   static String get userCardSummaryUrl => '$baseUrl$userCardSummaryEndpoint';
+  static String get forgotPasswordUrl => '$baseUrl$forgotPasswordEndpoint';
 } 

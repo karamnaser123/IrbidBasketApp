@@ -265,14 +265,38 @@ class _LoginPageState extends State<LoginPage> {
                         
                         // رابط نسيت كلمة المرور
                         TextButton(
-                          onPressed: () {
-                            // هنا يمكن إضافة منطق استعادة كلمة المرور
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('سيتم إرسال رابط إعادة تعيين كلمة المرور'),
-                                backgroundColor: Colors.blue,
-                              ),
-                            );
+                          onPressed: () async {
+                            final email = _emailController.text.trim();
+                            if (email.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('يرجى إدخال البريد الإلكتروني أولاً'),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                              return;
+                            }
+                            try {
+                              setState(() => _isLoading = true);
+                              await AuthService.forgotPassword(email);
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني'),
+                                  backgroundColor: Colors.blue,
+                                ),
+                              );
+                            } catch (e) {
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(e.toString()),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            } finally {
+                              if (mounted) setState(() => _isLoading = false);
+                            }
                           },
                           child: const Text(
                             'نسيت كلمة المرور؟',

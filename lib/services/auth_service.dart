@@ -112,4 +112,26 @@ class AuthService {
     final token = await getToken();
     return token != null && token.isNotEmpty;
   }
+
+  // استعادة كلمة المرور
+  static Future<bool> forgotPassword(String email) async {
+    final response = await http.post(
+      Uri.parse(ApiConstants.baseUrl + ApiConstants.forgotPasswordEndpoint),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: json.encode({
+        'email': email,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // يمكنك تعديل الرسالة حسب استجابة السيرفر
+      return true;
+    } else {
+      final Map<String, dynamic> errorData = json.decode(response.body);
+      throw Exception(errorData['message'] ?? 'حدث خطأ في استعادة كلمة المرور');
+    }
+  }
 }
