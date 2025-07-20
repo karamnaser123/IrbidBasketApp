@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
 import 'login_page.dart';
 import 'qr_code_page.dart';
+import 'pin_lock_page.dart';
 import 'services/auth_service.dart';
+import 'services/app_lock_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -65,10 +67,20 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
 
       if (isLoggedIn) {
-        // إذا كان المستخدم مسجل دخول، انتقل إلى الصفحة الرئيسية
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const QrCodePage()),
-        );
+        // التحقق من إعدادات القفل
+        final isLockEnabled = await AppLockService.isLockEnabled();
+        
+        if (isLockEnabled) {
+          // إذا كان القفل مفعل، انتقل إلى صفحة PIN
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const PinLockPage()),
+          );
+        } else {
+          // إذا لم يكن القفل مفعل، انتقل إلى الصفحة الرئيسية
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const QrCodePage()),
+          );
+        }
       } else {
         // إذا لم يكن مسجل دخول، انتقل إلى صفحة تسجيل الدخول
         Navigator.of(context).pushReplacement(

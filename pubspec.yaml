@@ -46,6 +46,15 @@ dependencies:
   
   # Device preview for testing on different screen sizes
   device_preview: ^1.1.0
+  
+  # Biometric authentication
+  local_auth: ^2.1.8
+  
+  # PIN lock screen
+  pin_code_fields: ^8.0.1
+  
+  # Secure storage for PIN
+  flutter_secure_storage: ^9.0.0
 
 dev_dependencies:
   flutter_test:

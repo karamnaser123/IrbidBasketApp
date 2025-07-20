@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'change_password_page.dart';
+import 'security_settings_page.dart';
+import 'login_page.dart';
 import 'services/user_service.dart';
+import 'services/auth_service.dart';
 import 'models/user.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -501,6 +504,38 @@ class _ProfilePageState extends State<ProfilePage> {
             
 
 
+                      // زر إعدادات الأمان
+                      Container(
+                        width: double.infinity,
+                        height: 56,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const SecuritySettingsPage(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white.withOpacity(0.1),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          icon: const Icon(Icons.security),
+                          label: const Text(
+                            'إعدادات الأمان',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+
                       // زر تغيير كلمة المرور
                       Container(
                         width: double.infinity,
@@ -538,12 +573,15 @@ class _ProfilePageState extends State<ProfilePage> {
                         width: double.infinity,
                         height: 56,
                         child: OutlinedButton.icon(
-                          onPressed: () {
+                          onPressed: () async {
                             // منطق تسجيل الخروج
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/login',
-                              (route) => false,
-                            );
+                            await AuthService.logout();
+                            if (mounted) {
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(builder: (_) => const LoginPage()),
+                                (route) => false,
+                              );
+                            }
                           },
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.red,
