@@ -77,9 +77,9 @@ class _SplashScreenState extends State<SplashScreen> {
           );
         } else {
           // إذا لم يكن القفل مفعل، انتقل إلى الصفحة الرئيسية
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const QrCodePage()),
-          );
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const QrCodePage()),
+        );
         }
       } else {
         // إذا لم يكن مسجل دخول، انتقل إلى صفحة تسجيل الدخول

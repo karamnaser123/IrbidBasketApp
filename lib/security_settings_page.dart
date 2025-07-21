@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'services/app_lock_service.dart';
-import 'services/biometric_service.dart';
 
 class SecuritySettingsPage extends StatefulWidget {
   const SecuritySettingsPage({super.key});
@@ -11,9 +10,6 @@ class SecuritySettingsPage extends StatefulWidget {
 
 class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
   bool _isLockEnabled = false;
-  bool _isBiometricEnabled = false;
-  bool _isBiometricAvailable = false;
-  String _biometricType = 'غير متوفر';
   bool _isLoading = true;
 
   @override
@@ -24,21 +20,20 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
 
   Future<void> _loadSettings() async {
     try {
+      print('=== تحميل إعدادات الأمان ===');
+      
       final lockEnabled = await AppLockService.isLockEnabled();
-      final biometricEnabled = await AppLockService.isBiometricEnabled();
-      final biometricAvailable = await BiometricService.isBiometricAvailable();
-      final biometricType = await BiometricService.getBiometricType();
+
+      print('قفل التطبيق مفعل: $lockEnabled');
 
       if (mounted) {
         setState(() {
           _isLockEnabled = lockEnabled;
-          _isBiometricEnabled = biometricEnabled;
-          _isBiometricAvailable = biometricAvailable;
-          _biometricType = biometricType;
           _isLoading = false;
         });
       }
     } catch (e) {
+      print('خطأ في تحميل إعدادات الأمان: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -75,140 +70,52 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
     }
   }
 
-  Future<void> _toggleBiometric(bool value) async {
-    if (value) {
-      // تفعيل المصادقة البيومترية
-      final isAuthenticated = await BiometricService.authenticate();
-      if (isAuthenticated) {
-        await AppLockService.setBiometricEnabled(true);
-        setState(() {
-          _isBiometricEnabled = true;
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('فشل في المصادقة البيومترية'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } else {
-      // إلغاء المصادقة البيومترية
-      await AppLockService.setBiometricEnabled(false);
-      setState(() {
-        _isBiometricEnabled = false;
-      });
-    }
-  }
-
   Future<bool> _showCreatePinDialog() async {
-    String pin = '';
-    return await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('إنشاء PIN'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('أدخل PIN مكون من 4 أرقام'),
-            const SizedBox(height: 16),
-            TextField(
-              keyboardType: TextInputType.number,
-              maxLength: 4,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'PIN',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                pin = value;
-              },
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('إلغاء'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (pin.length == 4) {
-                await AppLockService.setPin(pin);
-                Navigator.of(context).pop(true);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('يجب أن يكون PIN مكون من 4 أرقام'),
-                    backgroundColor: Colors.orange,
-                  ),
-                );
-              }
-            },
-            child: const Text('حفظ'),
-          ),
-        ],
-      ),
-    ) ?? false;
-  }
+    final pinController = TextEditingController();
+    final confirmPinController = TextEditingController();
+    bool isValid = false;
 
-  Future<bool> _showChangePinDialog() async {
-    String currentPin = '';
-    String newPin = '';
-    String confirmPin = '';
-    bool isCurrentPinValid = false;
-    
     return await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('تغيير PIN'),
+          title: const Text('إنشاء PIN'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // إدخال PIN الحالي
+              const Text(
+                'أدخل PIN مكون من 4 أرقام لحماية التطبيق',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
               TextField(
-                keyboardType: TextInputType.number,
-                maxLength: 4,
-                obscureText: true,
+                controller: pinController,
                 decoration: const InputDecoration(
-                  labelText: 'PIN الحالي',
+                  labelText: 'PIN',
                   border: OutlineInputBorder(),
                 ),
+                keyboardType: TextInputType.number,
+                maxLength: 4,
                 onChanged: (value) {
-                  currentPin = value;
+                  setState(() {
+                    isValid = value.length == 4 && value == confirmPinController.text;
+                  });
                 },
               ),
               const SizedBox(height: 16),
-              
-              // إدخال PIN الجديد
               TextField(
-                keyboardType: TextInputType.number,
-                maxLength: 4,
-                obscureText: true,
+                controller: confirmPinController,
                 decoration: const InputDecoration(
-                  labelText: 'PIN الجديد',
+                  labelText: 'تأكيد PIN',
                   border: OutlineInputBorder(),
                 ),
-                onChanged: (value) {
-                  newPin = value;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // تأكيد PIN الجديد
-              TextField(
                 keyboardType: TextInputType.number,
                 maxLength: 4,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'تأكيد PIN الجديد',
-                  border: OutlineInputBorder(),
-                ),
                 onChanged: (value) {
-                  confirmPin = value;
+                  setState(() {
+                    isValid = value.length == 4 && value == pinController.text;
+                  });
                 },
               ),
             ],
@@ -219,60 +126,206 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
               child: const Text('إلغاء'),
             ),
             ElevatedButton(
-              onPressed: () async {
-                // التحقق من PIN الحالي
-                final isValidCurrentPin = await AppLockService.verifyPin(currentPin);
-                if (!isValidCurrentPin) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('PIN الحالي غير صحيح'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                  return;
-                }
-                
-                // التحقق من تطابق PIN الجديد
-                if (newPin != confirmPin) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('PIN الجديد غير متطابق'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                  return;
-                }
-                
-                // التحقق من طول PIN الجديد
-                if (newPin.length != 4) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('يجب أن يكون PIN مكون من 4 أرقام'),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
-                  return;
-                }
-                
-                // حفظ PIN الجديد
-                await AppLockService.setPin(newPin);
-                Navigator.of(context).pop(true);
-                
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('تم تغيير PIN بنجاح'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              },
+              onPressed: isValid
+                  ? () async {
+                      await AppLockService.setPin(pinController.text);
+                      Navigator.of(context).pop(true);
+                    }
+                  : null,
+              child: const Text('حفظ'),
+            ),
+          ],
+        ),
+      ),
+    ) ?? false;
+  }
+
+  Future<bool> _showChangePinDialog() async {
+    final currentPinController = TextEditingController();
+    final newPinController = TextEditingController();
+    final confirmPinController = TextEditingController();
+    bool isValid = false;
+
+    return await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('تغيير PIN'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'أدخل PIN الحالي ثم PIN الجديد',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: currentPinController,
+                decoration: const InputDecoration(
+                  labelText: 'PIN الحالي',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                maxLength: 4,
+                onChanged: (value) {
+                  setState(() {
+                    isValid = value.length == 4 && 
+                              newPinController.text.length == 4 && 
+                              newPinController.text == confirmPinController.text;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: newPinController,
+                decoration: const InputDecoration(
+                  labelText: 'PIN الجديد',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                maxLength: 4,
+                onChanged: (value) {
+                  setState(() {
+                    isValid = value.length == 4 && 
+                              value == confirmPinController.text &&
+                              currentPinController.text.length == 4;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: confirmPinController,
+                decoration: const InputDecoration(
+                  labelText: 'تأكيد PIN الجديد',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                maxLength: 4,
+                onChanged: (value) {
+                  setState(() {
+                    isValid = value.length == 4 && 
+                              value == newPinController.text &&
+                              currentPinController.text.length == 4;
+                  });
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('إلغاء'),
+            ),
+            ElevatedButton(
+              onPressed: isValid
+                  ? () async {
+                      // التحقق من PIN الحالي
+                      final isCurrentPinValid = await AppLockService.verifyPin(currentPinController.text);
+                      if (isCurrentPinValid) {
+                        await AppLockService.setPin(newPinController.text);
+                        Navigator.of(context).pop(true);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('PIN الحالي غير صحيح'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  : null,
               child: const Text('تغيير'),
             ),
           ],
         ),
       ),
     ) ?? false;
+  }
+
+  Widget _buildSecurityCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool isEnabled,
+    required Function(bool) onChanged,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.15),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // أيقونة
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: isEnabled 
+                  ? const Color(0xFFe94560).withOpacity(0.2)
+                  : Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              icon,
+              color: isEnabled ? const Color(0xFFe94560) : Colors.white,
+              size: 28,
+            ),
+          ),
+          
+          const SizedBox(width: 16),
+          
+          // النص
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 14,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // المفتاح
+          Switch(
+            value: isEnabled,
+            onChanged: onChanged,
+            activeColor: const Color(0xFFe94560),
+            inactiveThumbColor: Colors.white.withOpacity(0.3),
+            inactiveTrackColor: Colors.white.withOpacity(0.1),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -291,369 +344,267 @@ class _SecuritySettingsPageState extends State<SecuritySettingsPage> {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(
-                        Icons.arrow_back_ios,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'إعدادات الأمان',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(width: 48), // للتوازن
-                  ],
+          child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFFe94560),
                 ),
-              ),
-
-              // Content
-              Expanded(
-                child: _isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
+              )
+            : Column(
+                children: [
+                  // Header
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
+                            color: Colors.white,
+                            size: 24,
+                          ),
                         ),
-                      )
-                    : SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            // قفل التطبيق
-                            _buildSecurityCard(
-                              title: 'قفل التطبيق',
-                              subtitle: 'استخدم PIN لحماية التطبيق',
-                              icon: Icons.lock,
-                              isEnabled: _isLockEnabled,
-                              onChanged: _toggleAppLock,
+                        const Expanded(
+                          child: Text(
+                            'إعدادات الأمان',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
                             ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(width: 48), // للتوازن
+                      ],
+                    ),
+                  ),
 
-                            const SizedBox(height: 16),
+                  // Content
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: [
+                          // قفل التطبيق
+                          _buildSecurityCard(
+                            title: 'قفل التطبيق',
+                            subtitle: 'استخدم PIN لحماية التطبيق',
+                            icon: Icons.lock,
+                            isEnabled: _isLockEnabled,
+                            onChanged: _toggleAppLock,
+                          ),
 
-                            // المصادقة البيومترية
-                            _buildSecurityCard(
-                              title: 'المصادقة البيومترية',
-                              subtitle: 'استخدم $_biometricType للوصول السريع',
-                              icon: Icons.fingerprint,
-                              isEnabled: _isBiometricEnabled,
-                              onChanged: _toggleBiometric,
-                              isAvailable: _isBiometricAvailable,
-                            ),
+                          const SizedBox(height: 24),
 
-                                                         const SizedBox(height: 32),
-
-                             // زر تغيير PIN
-                             if (_isLockEnabled)
-                               Container(
-                                 width: double.infinity,
-                                 height: 56,
-                                 margin: const EdgeInsets.only(bottom: 16),
-                                 child: ElevatedButton.icon(
-                                   onPressed: () async {
-                                     final result = await _showChangePinDialog();
-                                     if (result) {
-                                       // تم تغيير PIN بنجاح
-                                       setState(() {
-                                         // تحديث الواجهة إذا لزم الأمر
-                                       });
-                                     }
-                                   },
-                                   style: ElevatedButton.styleFrom(
-                                     backgroundColor: Colors.white.withOpacity(0.1),
-                                     foregroundColor: Colors.white,
-                                     shape: RoundedRectangleBorder(
-                                       borderRadius: BorderRadius.circular(12),
-                                     ),
-                                     elevation: 0,
-                                   ),
-                                   icon: const Icon(Icons.edit),
-                                   label: const Text(
-                                     'تغيير PIN',
-                                     style: TextStyle(
-                                       fontSize: 16,
-                                       fontWeight: FontWeight.bold,
-                                     ),
-                                   ),
-                                 ),
-                               ),
-
-                             // زر إعادة تعيين PIN
-                             if (_isLockEnabled)
-                               Container(
-                                 width: double.infinity,
-                                 height: 56,
-                                 margin: const EdgeInsets.only(bottom: 16),
-                                 child: OutlinedButton.icon(
-                                   onPressed: () async {
-                                     // تأكيد إعادة التعيين
-                                     final confirm = await showDialog<bool>(
-                                       context: context,
-                                       builder: (context) => AlertDialog(
-                                         title: const Text('إعادة تعيين PIN'),
-                                         content: const Text(
-                                           'هل أنت متأكد من إعادة تعيين PIN؟\n'
-                                           'سيتم حذف PIN الحالي وإنشاء واحد جديد.',
-                                         ),
-                                         actions: [
-                                           TextButton(
-                                             onPressed: () => Navigator.of(context).pop(false),
-                                             child: const Text('إلغاء'),
-                                           ),
-                                           ElevatedButton(
-                                             onPressed: () => Navigator.of(context).pop(true),
-                                             style: ElevatedButton.styleFrom(
-                                               backgroundColor: Colors.red,
-                                               foregroundColor: Colors.white,
-                                             ),
-                                             child: const Text('إعادة تعيين'),
-                                           ),
-                                         ],
-                                       ),
-                                     );
-
-                                     if (confirm == true) {
-                                       // حذف PIN الحالي
-                                       await AppLockService.deletePin();
-                                       // إعادة تعيين إعدادات القفل
-                                       await AppLockService.setLockEnabled(false);
-                                       
-                                       setState(() {
-                                         _isLockEnabled = false;
-                                       });
-
-                                       if (mounted) {
-                                         ScaffoldMessenger.of(context).showSnackBar(
-                                           const SnackBar(
-                                             content: Text('تم إعادة تعيين PIN بنجاح'),
-                                             backgroundColor: Colors.green,
-                                           ),
-                                         );
-                                       }
-                                     }
-                                   },
-                                   style: OutlinedButton.styleFrom(
-                                     foregroundColor: Colors.red,
-                                     side: const BorderSide(color: Colors.red),
-                                     shape: RoundedRectangleBorder(
-                                       borderRadius: BorderRadius.circular(12),
-                                     ),
-                                   ),
-                                   icon: const Icon(Icons.refresh),
-                                   label: const Text(
-                                     'إعادة تعيين PIN',
-                                     style: TextStyle(
-                                       fontSize: 16,
-                                       fontWeight: FontWeight.bold,
-                                     ),
-                                   ),
-                                 ),
-                               ),
-
-                             // زر إعادة تعيين PIN بالبصمة
-                             if (_isLockEnabled && _isBiometricAvailable)
-                               Container(
-                                 width: double.infinity,
-                                 height: 56,
-                                 margin: const EdgeInsets.only(bottom: 16),
-                                 child: OutlinedButton.icon(
-                                   onPressed: () async {
-                                     // تأكيد إعادة التعيين بالبصمة
-                                     final confirm = await showDialog<bool>(
-                                       context: context,
-                                       builder: (context) => AlertDialog(
-                                         title: const Text('إعادة تعيين PIN بالبصمة'),
-                                         content: const Text(
-                                           'هل تريد إعادة تعيين PIN باستخدام البصمة؟\n'
-                                           'سيتم طلب المصادقة البيومترية.',
-                                         ),
-                                         actions: [
-                                           TextButton(
-                                             onPressed: () => Navigator.of(context).pop(false),
-                                             child: const Text('إلغاء'),
-                                           ),
-                                           ElevatedButton(
-                                             onPressed: () => Navigator.of(context).pop(true),
-                                             style: ElevatedButton.styleFrom(
-                                               backgroundColor: const Color(0xFFe94560),
-                                               foregroundColor: Colors.white,
-                                             ),
-                                             child: const Text('إعادة تعيين'),
-                                           ),
-                                         ],
-                                       ),
-                                     );
-
-                                     if (confirm == true) {
-                                       final success = await AppLockService.resetPinWithBiometric();
-                                       
-                                       if (success) {
-                                         setState(() {
-                                           _isLockEnabled = false;
-                                         });
-
-                                         if (mounted) {
-                                           ScaffoldMessenger.of(context).showSnackBar(
-                                             const SnackBar(
-                                               content: Text('تم إعادة تعيين PIN بالبصمة بنجاح'),
-                                               backgroundColor: Colors.green,
-                                             ),
-                                           );
-                                         }
-                                       } else {
-                                         if (mounted) {
-                                           ScaffoldMessenger.of(context).showSnackBar(
-                                             const SnackBar(
-                                               content: Text('فشل في المصادقة البيومترية'),
-                                               backgroundColor: Colors.red,
-                                             ),
-                                           );
-                                         }
-                                       }
-                                     }
-                                   },
-                                   style: OutlinedButton.styleFrom(
-                                     foregroundColor: const Color(0xFFe94560),
-                                     side: const BorderSide(color: Color(0xFFe94560)),
-                                     shape: RoundedRectangleBorder(
-                                       borderRadius: BorderRadius.circular(12),
-                                     ),
-                                   ),
-                                   icon: const Icon(Icons.fingerprint),
-                                   label: const Text(
-                                     'إعادة تعيين PIN بالبصمة',
-                                     style: TextStyle(
-                                       fontSize: 16,
-                                       fontWeight: FontWeight.bold,
-                                     ),
-                                   ),
-                                 ),
-                               ),
-
-                             const SizedBox(height: 32),
-
-                             // معلومات إضافية
-                             Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.2),
+                          // أزرار إضافية
+                          if (_isLockEnabled) ...[
+                            // زر تغيير PIN
+                            Container(
+                              width: double.infinity,
+                              height: 56,
+                              margin: const EdgeInsets.only(bottom: 12),
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  final result = await _showChangePinDialog();
+                                  if (result) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('تم تغيير PIN بنجاح'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFe94560),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                icon: const Icon(Icons.edit, size: 20),
+                                label: const Text(
+                                  'تغيير PIN',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'معلومات الأمان',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
+                            ),
+
+                            // زر إعادة تعيين PIN
+                            Container(
+                              width: double.infinity,
+                              height: 56,
+                              margin: const EdgeInsets.only(bottom: 24),
+                              child: OutlinedButton.icon(
+                                onPressed: () async {
+                                  // تأكيد إعادة التعيين
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('إعادة تعيين PIN'),
+                                      content: const Text(
+                                        'هل أنت متأكد من إعادة تعيين PIN؟\n'
+                                        'سيتم حذف PIN الحالي وإنشاء واحد جديد.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.of(context).pop(false),
+                                          child: const Text('إلغاء'),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () => Navigator.of(context).pop(true),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          child: const Text('إعادة تعيين'),
+                                        ),
+                                      ],
                                     ),
+                                  );
+
+                                  if (confirm == true) {
+                                    // حذف PIN الحالي
+                                    await AppLockService.deletePin();
+                                    // إعادة تعيين إعدادات القفل
+                                    await AppLockService.setLockEnabled(false);
+                                    
+                                    setState(() {
+                                      _isLockEnabled = false;
+                                    });
+
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('تم إعادة تعيين PIN بنجاح'),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.red,
+                                  side: const BorderSide(color: Colors.red),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    '• PIN محفوظ بشكل آمن في الجهاز\n'
-                                    '• المصادقة البيومترية تستخدم تقنيات الأمان المتقدمة\n'
-                                    '• يمكنك تغيير الإعدادات في أي وقت',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
-                                      fontSize: 14,
-                                    ),
+                                ),
+                                icon: const Icon(Icons.refresh, size: 20),
+                                label: const Text(
+                                  'إعادة تعيين PIN',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           ],
-                        ),
+
+                          // معلومات إضافية
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.15),
+                                width: 1,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFe94560).withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(
+                                        Icons.security,
+                                        color: Color(0xFFe94560),
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    const Text(
+                                      'معلومات الأمان',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                _buildInfoItem(
+                                  'PIN محفوظ بشكل آمن في الجهاز.',
+                                  Icons.shield,
+                                ),
+                                const SizedBox(height: 12),
+                                _buildInfoItem(
+                                  'يمكنك تغيير الإعدادات في أي وقت.',
+                                  Icons.settings,
+                                ),
+                                const SizedBox(height: 12),
+                                _buildInfoItem(
+                                  'PIN مكون من 4 أرقام فقط.',
+                                  Icons.pin,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 32),
+                        ],
                       ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
         ),
       ),
     );
   }
 
-  Widget _buildSecurityCard({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required bool isEnabled,
-    required Function(bool) onChanged,
-    bool isAvailable = true,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+  Widget _buildInfoItem(String text, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Icon(
+            icon,
+            color: Colors.white.withOpacity(0.8),
+            size: 16,
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isEnabled
-                  ? const Color(0xFFe94560)
-                  : Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 24,
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 14,
+              height: 1.4,
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Switch(
-            value: isEnabled,
-            onChanged: isAvailable ? onChanged : null,
-            activeColor: const Color(0xFFe94560),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 } 

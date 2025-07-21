@@ -504,6 +504,8 @@ class _ProfilePageState extends State<ProfilePage> {
             
 
 
+
+
                       // زر إعدادات الأمان
                       Container(
                         width: double.infinity,
@@ -579,8 +581,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             if (mounted) {
                               Navigator.of(context).pushAndRemoveUntil(
                                 MaterialPageRoute(builder: (_) => const LoginPage()),
-                                (route) => false,
-                              );
+                              (route) => false,
+                            );
                             }
                           },
                           style: OutlinedButton.styleFrom(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'services/app_lock_service.dart';
-import 'services/biometric_service.dart';
 import 'qr_code_page.dart';
 
 class PinLockPage extends StatefulWidget {
@@ -14,8 +13,6 @@ class PinLockPage extends StatefulWidget {
 class _PinLockPageState extends State<PinLockPage> with TickerProviderStateMixin {
   final TextEditingController _pinController = TextEditingController();
   bool _isLoading = false;
-  bool _isBiometricAvailable = false;
-  bool _isBiometricEnabled = false;
   int _attempts = 0;
   static const int _maxAttempts = 5;
   late AnimationController _shakeController;
@@ -25,7 +22,6 @@ class _PinLockPageState extends State<PinLockPage> with TickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    _checkBiometric();
     
     // إعداد تأثير الاهتزاز
     _shakeController = AnimationController(
@@ -48,17 +44,7 @@ class _PinLockPageState extends State<PinLockPage> with TickerProviderStateMixin
     super.dispose();
   }
 
-  Future<void> _checkBiometric() async {
-    final biometricAvailable = await BiometricService.isBiometricAvailable();
-    final biometricEnabled = await AppLockService.isBiometricEnabled();
-    
-    if (mounted) {
-      setState(() {
-        _isBiometricAvailable = biometricAvailable;
-        _isBiometricEnabled = biometricEnabled;
-      });
-    }
-  }
+
 
   Future<void> _verifyPin(String pin) async {
     if (_attempts >= _maxAttempts) {
@@ -141,32 +127,7 @@ class _PinLockPageState extends State<PinLockPage> with TickerProviderStateMixin
     }
   }
 
-  Future<void> _authenticateBiometric() async {
-    try {
-      final isAuthenticated = await BiometricService.authenticate();
-      if (isAuthenticated && mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const QrCodePage()),
-        );
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('فشل في المصادقة البيومترية'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('خطأ في المصادقة: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -297,34 +258,6 @@ class _PinLockPageState extends State<PinLockPage> with TickerProviderStateMixin
                        ),
 
                       const SizedBox(height: 32),
-
-                      // زر المصادقة البيومترية
-                      if (_isBiometricAvailable && _isBiometricEnabled)
-                        Container(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton.icon(
-                            onPressed: _isLoading ? null : _authenticateBiometric,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white.withOpacity(0.1),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 0,
-                            ),
-                            icon: const Icon(Icons.fingerprint, size: 24),
-                            label: const Text(
-                              'استخدم البصمة',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                      const SizedBox(height: 16),
 
                       // مؤشر التحميل
                       if (_isLoading)
