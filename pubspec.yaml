@@ -52,6 +52,9 @@ dependencies:
   
   # Secure storage for PIN
   flutter_secure_storage: ^9.0.0
+  
+  # لمراقبة الاتصال بالإنترنت
+  connectivity_plus: ^5.0.2
 
 dev_dependencies:
   flutter_test:

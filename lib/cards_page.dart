@@ -4,6 +4,8 @@ import 'models/card_models.dart';
 import 'models/user.dart';
 import 'services/user_service.dart';
 import 'card_details_page.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'no_internet_page.dart';
 
 class CardsPage extends StatefulWidget {
   const CardsPage({super.key});
@@ -24,6 +26,15 @@ class _CardsPageState extends State<CardsPage> {
   }
 
   Future<void> _loadCardData() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => NoInternetPage(onRetry: _loadCardData)),
+        );
+      }
+      return;
+    }
     try {
       setState(() {
         _isLoading = true;
@@ -39,6 +50,14 @@ class _CardsPageState extends State<CardsPage> {
         });
       }
     } catch (e) {
+      if (e.toString().contains('SocketException') || e.toString().contains('Failed host lookup')) {
+        if (mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => NoInternetPage(onRetry: _loadCardData)),
+          );
+        }
+        return;
+      }
       if (mounted) {
         setState(() {
           _error = e.toString();

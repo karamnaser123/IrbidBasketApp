@@ -9,6 +9,8 @@ import 'package:path_provider/path_provider.dart';
 import 'login_page.dart';
 import 'profile_page.dart';
 import 'cards_page.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'no_internet_page.dart';
 
 class QrCodePage extends StatefulWidget {
   const QrCodePage({super.key});
@@ -30,6 +32,16 @@ class _QrCodePageState extends State<QrCodePage> {
   }
 
   Future<void> _loadQrCode() async {
+    // تحقق من الاتصال أولاً
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => NoInternetPage(onRetry: _loadQrCode)),
+        );
+      }
+      return;
+    }
     try {
       setState(() {
         _isLoading = true;
@@ -39,7 +51,6 @@ class _QrCodePageState extends State<QrCodePage> {
 
       final response = await QrCodeService.getQrCode();
       _qrCode = response.qrCode;
-      // تحميل صورة QR مع التوكن
       final headers = await AuthService.getAuthHeaders();
       final imgRes = await http.get(
         Uri.parse(_qrCode!.qrCodeImageUrl),
@@ -54,6 +65,15 @@ class _QrCodePageState extends State<QrCodePage> {
         _isLoading = false;
       });
     } catch (e) {
+      // إذا كان الخطأ متعلق بالاتصال
+      if (e.toString().contains('SocketException') || e.toString().contains('Failed host lookup')) {
+        if (mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => NoInternetPage(onRetry: _loadQrCode)),
+          );
+        }
+        return;
+      }
       setState(() {
         _error = e.toString();
         _isLoading = false;

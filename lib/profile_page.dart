@@ -5,6 +5,8 @@ import 'login_page.dart';
 import 'services/user_service.dart';
 import 'services/auth_service.dart';
 import 'models/user.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'no_internet_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -32,13 +34,20 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _loadUserProfile() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => NoInternetPage(onRetry: _loadUserProfile)),
+        );
+      }
+      return;
+    }
     try {
       setState(() {
         _isLoading = true;
       });
-      
       final user = await UserService.getUserProfile();
-      
       if (mounted) {
         setState(() {
           _user = user;
@@ -47,11 +56,18 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       }
     } catch (e) {
+      if (e.toString().contains('SocketException') || e.toString().contains('Failed host lookup')) {
+        if (mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => NoInternetPage(onRetry: _loadUserProfile)),
+          );
+        }
+        return;
+      }
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('خطأ في تحميل البيانات: $e'),
