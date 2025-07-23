@@ -523,36 +523,36 @@ class _ProfilePageState extends State<ProfilePage> {
 
 
                       // زر إعدادات الأمان
-                      Container(
-                        width: double.infinity,
-                        height: 56,
-                        margin: const EdgeInsets.only(bottom: 16),
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const SecuritySettingsPage(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white.withOpacity(0.1),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 0,
-                          ),
-                          icon: const Icon(Icons.security),
-                          label: const Text(
-                            'إعدادات الأمان',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
+                      // Container(
+                      //   width: double.infinity,
+                      //   height: 56,
+                      //   margin: const EdgeInsets.only(bottom: 16),
+                      //   child: ElevatedButton.icon(
+                      //     onPressed: () {
+                      //       Navigator.of(context).push(
+                      //         MaterialPageRoute(
+                      //           builder: (context) => const SecuritySettingsPage(),
+                      //         ),
+                      //       );
+                      //     },
+                      //     style: ElevatedButton.styleFrom(
+                      //       backgroundColor: Colors.white.withOpacity(0.1),
+                      //       foregroundColor: Colors.white,
+                      //       shape: RoundedRectangleBorder(
+                      //         borderRadius: BorderRadius.circular(16),
+                      //       ),
+                      //       elevation: 0,
+                      //     ),
+                      //     icon: const Icon(Icons.security),
+                      //     label: const Text(
+                      //       'إعدادات الأمان',
+                      //       style: TextStyle(
+                      //         fontSize: 16,
+                      //         fontWeight: FontWeight.bold,
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
 
                       // زر تغيير كلمة المرور
                       Container(
