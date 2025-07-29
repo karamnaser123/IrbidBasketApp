@@ -314,6 +314,8 @@ class _CardsPageState extends State<CardsPage> {
       child: Column(
         children: [
           _buildCardTile(card),
+          // عرض البطاقات الفضية بشكل منفصل
+          _buildSilverCardsSection(),
         ],
       ),
     );
@@ -476,6 +478,240 @@ class _CardsPageState extends State<CardsPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // عرض البطاقات الفضية بشكل منفصل
+  Widget _buildSilverCardsSection() {
+    if (_cardData == null || _cardData!.card.cardType != 'gold') return const SizedBox.shrink();
+    
+    final silverCards = _cardData!.card.statistics.silverCards;
+    if (silverCards == null || silverCards.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // عنوان القسم
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFFC0C0C0).withOpacity(0.2),
+                  const Color(0xFFC0C0C0).withOpacity(0.05),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.star_border,
+                  color: const Color(0xFFC0C0C0),
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'البطاقات الفضية المرتبطة',
+                  style: TextStyle(
+                    color: const Color(0xFFC0C0C0),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFC0C0C0).withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${silverCards.length}',
+                    style: TextStyle(
+                      color: const Color(0xFFC0C0C0),
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 15),
+          
+          // قائمة البطاقات الفضية
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: silverCards.length,
+            itemBuilder: (context, index) {
+              final silverCard = silverCards[index];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFFC0C0C0).withOpacity(0.15),
+                      const Color(0xFFC0C0C0).withOpacity(0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFC0C0C0).withOpacity(0.3),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFC0C0C0).withOpacity(0.1),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => CardDetailsPage(
+                          cardId: silverCard.id,
+                          cardType: 'silver',
+                          cardNumber: silverCard.serialNumber,
+                        ),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      children: [
+                        // أيقونة البطاقة الفضية
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFFC0C0C0).withOpacity(0.3),
+                                const Color(0xFFC0C0C0).withOpacity(0.1),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Icon(
+                            Icons.star_border,
+                            color: const Color(0xFFC0C0C0),
+                            size: 28,
+                          ),
+                        ),
+                        
+                        const SizedBox(width: 15),
+                        
+                        // تفاصيل البطاقة
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'بطاقة فضية',
+                                style: TextStyle(
+                                  color: const Color(0xFFC0C0C0),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                'رقم: ${silverCard.serialNumber}',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.8),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF4CAF50).withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'خصم ${silverCard.discountRate}%',
+                                      style: const TextStyle(
+                                        color: Color(0xFF4CAF50),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'الاستخدام: ${silverCard.usageCount}',
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.7),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        
+                        // حالة البطاقة
+                        Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: silverCard.status == 'active' 
+                                    ? const Color(0xFF4CAF50).withOpacity(0.2)
+                                    : Colors.red.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                silverCard.status == 'active' ? 'نشط' : 'غير نشط',
+                                style: TextStyle(
+                                  color: silverCard.status == 'active' 
+                                      ? const Color(0xFF4CAF50)
+                                      : Colors.red,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              color: const Color(0xFFC0C0C0).withOpacity(0.7),
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

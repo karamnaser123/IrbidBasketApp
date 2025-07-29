@@ -29,24 +29,24 @@ class CardsService {
     }
   }
 
-  static Future<Map<String, dynamic>> getCardDetails({
+  static Future<CardDetailsResponse> getCardDetails({
     required int cardId,
     required String cardType,
   }) async {
     final headers = await AuthService.getAuthHeaders();
+    final url = '${ApiConstants.cardDetailsUrl}?card_id=$cardId&card_type=$cardType';
+    
 
     final response = await http.get(
-      Uri.parse('${ApiConstants.cardDetailsUrl}?card_id=$cardId&card_type=$cardType'),
+      Uri.parse(url),
       headers: headers,
     );
 
-    print('Get card details response status: ${response.statusCode}');
-    print('Get card details response body: ${response.body}');
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       if (data['status'] == 'success') {
-        return data['data'];
+        return CardDetailsResponse.fromJson(data, cardType);
       } else {
         throw Exception(data['message'] ?? 'فشل في جلب تفاصيل الكارت');
       }
