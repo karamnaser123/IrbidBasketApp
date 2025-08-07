@@ -44,8 +44,7 @@ dependencies:
   # Path provider for file system access
   path_provider: ^2.1.1
 
-  # Device preview for testing on different screen sizes
-  device_preview: ^1.1.0
+
 
   # PIN lock screen
   pin_code_fields: ^8.0.1
@@ -61,6 +60,8 @@ dev_dependencies:
     sdk: flutter
   flutter_launcher_icons: ^0.13.1
   flutter_lints: ^5.0.0
+  # Device preview for testing on different screen sizes
+  device_preview: ^1.1.0
 
 flutter_launcher_icons:
   android: true

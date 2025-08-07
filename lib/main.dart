@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:device_preview/device_preview.dart';
+
 import 'login_page.dart';
 import 'qr_code_page.dart';
 import 'pin_lock_page.dart';
