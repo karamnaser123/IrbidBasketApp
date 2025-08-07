@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/cards_service.dart';
 import 'models/card_models.dart';
-import 'models/user.dart';
-import 'services/user_service.dart';
+
 import 'card_details_page.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'no_internet_page.dart';

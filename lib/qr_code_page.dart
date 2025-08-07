@@ -5,7 +5,7 @@ import 'services/auth_service.dart';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+
 import 'login_page.dart';
 import 'profile_page.dart';
 import 'cards_page.dart';
