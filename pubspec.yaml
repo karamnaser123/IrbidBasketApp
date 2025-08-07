@@ -48,8 +48,7 @@ dependencies:
 
 
 
-  # لمراقبة الاتصال بالإنترنت
-  connectivity_plus: ^5.0.2
+
 
 dev_dependencies:
   flutter_test:

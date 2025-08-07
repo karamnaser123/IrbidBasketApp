@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+
 
 class NoInternetPage extends StatelessWidget {
   final VoidCallback? onRetry;
@@ -46,18 +46,23 @@ class NoInternetPage extends StatelessWidget {
                   ),
                 ),
                 onPressed: () async {
-                  final connectivityResult = await Connectivity().checkConnectivity();
-                  if (connectivityResult != ConnectivityResult.none) {
-                    if (onRetry != null) onRetry!();
-                    Navigator.of(context).pop();
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('لا يوجد اتصال بالإنترنت!'),
-                        backgroundColor: Colors.redAccent,
-                      ),
-                    );
-                  }
+                  // مؤقتاً نتجاهل فحص الاتصال
+                  // final connectivityResult = await Connectivity().checkConnectivity();
+                  // if (connectivityResult != ConnectivityResult.none) {
+                  //   if (onRetry != null) onRetry!();
+                  //   Navigator.of(context).pop();
+                  // } else {
+                  //   ScaffoldMessenger.of(context).showSnackBar(
+                  //     const SnackBar(
+                  //       content: Text('لا يوجد اتصال بالإنترنت!'),
+                  //       backgroundColor: Colors.redAccent,
+                  //   ),
+                  // );
+                  // }
+                  
+                  // مؤقتاً نعود مباشرة
+                  if (onRetry != null) onRetry!();
+                  Navigator.of(context).pop();
                 },
                 icon: const Icon(Icons.refresh),
                 label: const Text('إعادة المحاولة'),

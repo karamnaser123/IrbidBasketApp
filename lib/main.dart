@@ -4,8 +4,6 @@ import 'debug_test_page.dart';
 import 'login_page.dart';
 import 'qr_code_page.dart';
 import 'services/auth_service.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'no_internet_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,51 +17,12 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late final Connectivity _connectivity;
-  late final Stream<ConnectivityResult> _connectivityStream;
-  bool _hasInternet = true;
   late final GlobalKey<NavigatorState> _navigatorKey;
 
   @override
   void initState() {
     super.initState();
     _navigatorKey = GlobalKey<NavigatorState>();
-    _initConnectivity();
-  }
-
-  void _initConnectivity() {
-    try {
-      _connectivity = Connectivity();
-      _connectivityStream = _connectivity.onConnectivityChanged;
-      _connectivityStream.listen((result) async {
-        try {
-          final hasInternet = result != ConnectivityResult.none;
-          if (!hasInternet && _hasInternet) {
-            _hasInternet = false;
-            // إظهار صفحة لا يوجد إنترنت كحوار غير قابل للإغلاق
-            final context = _navigatorKey.currentContext;
-            if (context != null && mounted) {
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (_) => const NoInternetPage(),
-              );
-            }
-          } else if (hasInternet && !_hasInternet) {
-            _hasInternet = true;
-            // إغلاق صفحة الخطأ عند عودة الإنترنت
-            if (mounted && (_navigatorKey.currentState?.canPop() ?? false)) {
-              _navigatorKey.currentState?.pop();
-            }
-          }
-        } catch (e) {
-          print('خطأ في مراقبة الاتصال: $e');
-        }
-      });
-    } catch (e) {
-      print('خطأ في تهيئة مراقبة الاتصال: $e');
-      // في حالة فشل تهيئة مراقبة الاتصال، نتجاهلها ونكمل
-    }
   }
 
   @override

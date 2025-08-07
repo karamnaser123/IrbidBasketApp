@@ -3,7 +3,7 @@ import 'services/cards_service.dart';
 import 'models/card_models.dart';
 
 import 'card_details_page.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+
 import 'no_internet_page.dart';
 
 class CardsPage extends StatefulWidget {
@@ -25,15 +25,16 @@ class _CardsPageState extends State<CardsPage> {
   }
 
   Future<void> _loadCardData() async {
-    final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
-      if (mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => NoInternetPage(onRetry: _loadCardData)),
-        );
-      }
-      return;
-    }
+    // مؤقتاً نتجاهل فحص الاتصال
+    // final connectivityResult = await Connectivity().checkConnectivity();
+    // if (connectivityResult == ConnectivityResult.none) {
+    //   if (mounted) {
+    //     Navigator.of(context).push(
+    //       MaterialPageRoute(builder: (_) => NoInternetPage(onRetry: _loadCardData)),
+    //     );
+    //   }
+    //   return;
+    // }
     try {
       setState(() {
         _isLoading = true;

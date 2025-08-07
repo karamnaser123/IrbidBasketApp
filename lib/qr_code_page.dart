@@ -9,7 +9,7 @@ import 'dart:io';
 import 'login_page.dart';
 import 'profile_page.dart';
 import 'cards_page.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+
 import 'no_internet_page.dart';
 
 class QrCodePage extends StatefulWidget {
@@ -32,16 +32,16 @@ class _QrCodePageState extends State<QrCodePage> {
   }
 
   Future<void> _loadQrCode() async {
-    // تحقق من الاتصال أولاً
-    final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
-      if (mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => NoInternetPage(onRetry: _loadQrCode)),
-        );
-      }
-      return;
-    }
+    // تحقق من الاتصال أولاً - مؤقتاً نتجاهل فحص الاتصال
+    // final connectivityResult = await Connectivity().checkConnectivity();
+    // if (connectivityResult == ConnectivityResult.none) {
+    //   if (mounted) {
+    //     Navigator.of(context).push(
+    //       MaterialPageRoute(builder: (_) => NoInternetPage(onRetry: _loadQrCode)),
+    //     );
+    //   }
+    //   return;
+    // }
     try {
       setState(() {
         _isLoading = true;

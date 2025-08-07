@@ -5,7 +5,7 @@ import 'login_page.dart';
 import 'services/user_service.dart';
 import 'services/auth_service.dart';
 import 'models/user.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+
 import 'no_internet_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -34,15 +34,16 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _loadUserProfile() async {
-    final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
-      if (mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => NoInternetPage(onRetry: _loadUserProfile)),
-        );
-      }
-      return;
-    }
+    // مؤقتاً نتجاهل فحص الاتصال
+    // final connectivityResult = await Connectivity().checkConnectivity();
+    // if (connectivityResult == ConnectivityResult.none) {
+    //   if (mounted) {
+    //     Navigator.of(context).push(
+    //       MaterialPageRoute(builder: (_) => NoInternetPage(onRetry: _loadUserProfile)),
+    //     );
+    //   }
+    //   return;
+    // }
     try {
       setState(() {
         _isLoading = true;
