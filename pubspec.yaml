@@ -2,7 +2,7 @@ name: irbid_basket
 description: "Irbid Basket - A Flutter application."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -34,25 +34,25 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  
+
   # HTTP requests
   http: ^1.1.0
-  
+
   # Shared preferences for local storage
   shared_preferences: ^2.2.2
-  
+
   # Path provider for file system access
   path_provider: ^2.1.1
-  
+
   # Device preview for testing on different screen sizes
   device_preview: ^1.1.0
-  
+
   # PIN lock screen
   pin_code_fields: ^8.0.1
-  
+
   # Secure storage for PIN
   flutter_secure_storage: ^9.0.0
-  
+
   # لمراقبة الاتصال بالإنترنت
   connectivity_plus: ^5.0.2
 
@@ -73,7 +73,7 @@ flutter_launcher_icons:
     generate: true
     image_path: "assets/icon/app_icon.png"
 
-# The "flutter_lints" package below contains a set of recommended lints to
+  # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
@@ -85,7 +85,6 @@ flutter_launcher_icons:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
