@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'debug_test_page.dart';
 import 'login_page.dart';
 import 'qr_code_page.dart';
 import 'services/auth_service.dart';
@@ -27,29 +28,42 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _navigatorKey = GlobalKey<NavigatorState>();
-    _connectivity = Connectivity();
-    _connectivityStream = _connectivity.onConnectivityChanged;
-    _connectivityStream.listen((result) async {
-      final hasInternet = result != ConnectivityResult.none;
-      if (!hasInternet && _hasInternet) {
-        _hasInternet = false;
-        // إظهار صفحة لا يوجد إنترنت كحوار غير قابل للإغلاق
-        final context = _navigatorKey.currentContext;
-        if (context != null) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (_) => const NoInternetPage(),
-          );
+    _initConnectivity();
+  }
+
+  void _initConnectivity() {
+    try {
+      _connectivity = Connectivity();
+      _connectivityStream = _connectivity.onConnectivityChanged;
+      _connectivityStream.listen((result) async {
+        try {
+          final hasInternet = result != ConnectivityResult.none;
+          if (!hasInternet && _hasInternet) {
+            _hasInternet = false;
+            // إظهار صفحة لا يوجد إنترنت كحوار غير قابل للإغلاق
+            final context = _navigatorKey.currentContext;
+            if (context != null && mounted) {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (_) => const NoInternetPage(),
+              );
+            }
+          } else if (hasInternet && !_hasInternet) {
+            _hasInternet = true;
+            // إغلاق صفحة الخطأ عند عودة الإنترنت
+            if (mounted && (_navigatorKey.currentState?.canPop() ?? false)) {
+              _navigatorKey.currentState?.pop();
+            }
+          }
+        } catch (e) {
+          print('خطأ في مراقبة الاتصال: $e');
         }
-      } else if (hasInternet && !_hasInternet) {
-        _hasInternet = true;
-        // إغلاق صفحة الخطأ عند عودة الإنترنت
-        if (_navigatorKey.currentState?.canPop() ?? false) {
-          _navigatorKey.currentState?.pop();
-        }
-      }
-    });
+      });
+    } catch (e) {
+      print('خطأ في تهيئة مراقبة الاتصال: $e');
+      // في حالة فشل تهيئة مراقبة الاتصال، نتجاهلها ونكمل
+    }
   }
 
   @override
@@ -66,7 +80,8 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       navigatorKey: _navigatorKey,
-      home: const SplashScreen(),
+      home: const DebugTestPage(), // مؤقت للاختبار
+      // home: const SplashScreen(),
     );
   }
 }
@@ -86,12 +101,12 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAuthStatus() async {
-    // انتظار قليل لعرض شاشة البداية
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (!mounted) return;
-
     try {
+      // انتظار قليل لعرض شاشة البداية
+      await Future.delayed(const Duration(seconds: 2));
+      
+      if (!mounted) return;
+
       // التحقق من وجود توكن صالح
       final isLoggedIn = await AuthService.isLoggedIn();
       
@@ -99,21 +114,27 @@ class _SplashScreenState extends State<SplashScreen> {
 
       if (isLoggedIn) {
         // انتقل مباشرة إلى الصفحة الرئيسية
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const QrCodePage()),
-        );
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const QrCodePage()),
+          );
+        }
       } else {
         // إذا لم يكن مسجل دخول، انتقل إلى صفحة تسجيل الدخول
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const LoginPage()),
+          );
+        }
+      }
+    } catch (e) {
+      print('خطأ في فحص حالة المصادقة: $e');
+      // في حالة حدوث خطأ، انتقل إلى صفحة تسجيل الدخول
+      if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const LoginPage()),
         );
       }
-    } catch (e) {
-      // في حالة حدوث خطأ، انتقل إلى صفحة تسجيل الدخول
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-      );
     }
   }
 
