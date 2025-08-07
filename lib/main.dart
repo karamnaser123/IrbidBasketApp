@@ -43,11 +43,14 @@ class _MyAppState extends State<MyApp> {
       if (!hasInternet && _hasInternet) {
         _hasInternet = false;
         // إظهار صفحة لا يوجد إنترنت كحوار غير قابل للإغلاق
-        showDialog(
-          context: _navigatorKey.currentContext!,
-          barrierDismissible: false,
-          builder: (_) => const NoInternetPage(),
-        );
+        final context = _navigatorKey.currentContext;
+        if (context != null) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const NoInternetPage(),
+          );
+        }
       } else if (hasInternet && !_hasInternet) {
         _hasInternet = true;
         // إغلاق صفحة الخطأ عند عودة الإنترنت

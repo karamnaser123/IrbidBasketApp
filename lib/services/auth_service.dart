@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
 import '../models/login_response.dart';
+import '../models/user.dart';
 
 class AuthService {
   static const String _tokenKey = 'auth_token';
