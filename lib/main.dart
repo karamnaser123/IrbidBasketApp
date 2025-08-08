@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'debug_test_page.dart';
+// debug_test_page تمت إزالتها
 import 'login_page.dart';
 import 'qr_code_page.dart';
 import 'services/auth_service.dart';
@@ -39,8 +39,7 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       navigatorKey: _navigatorKey,
-      home: const DebugTestPage(), // مؤقت للاختبار
-      // home: const SplashScreen(),
+      home: const SplashScreen(),
     );
   }
 }
